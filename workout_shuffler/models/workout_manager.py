@@ -27,7 +27,7 @@ class WorkoutManager:
             if not row:
                 return None
             exercises = [
-                Exercise(e.id, e.name, e.muscle_group, e.difficulty, e.duration_min)
+                Exercise(e.id, e.name, e.muscle_group, e.difficulty, e.duration_sets)
                 for e in row.exercises
             ]
             return WorkoutPlan(row.id, row.name, exercises)
@@ -41,7 +41,7 @@ class WorkoutManager:
             return [
                 WorkoutPlan(
                     row.id, row.name,
-                    [Exercise(e.id, e.name, e.muscle_group, e.difficulty, e.duration_min)
+                    [Exercise(e.id, e.name, e.muscle_group, e.difficulty, e.duration_sets)
                      for e in row.exercises]
                 )
                 for row in rows
@@ -70,11 +70,11 @@ class WorkoutManager:
                 name=exercise.name,
                 muscle_group=exercise.muscle_group,
                 difficulty=exercise.difficulty,
-                duration_min=exercise.duration_min,
+                duration_sets=exercise.duration_sets,
             )
             session.add(ex)
             session.commit()
-            return Exercise(ex.id, ex.name, ex.muscle_group, ex.difficulty, ex.duration_min)
+            return Exercise(ex.id, ex.name, ex.muscle_group, ex.difficulty, ex.duration_sets)
         finally:
             session.close()
 

@@ -62,7 +62,7 @@
                         {{ ex.difficulty or '—' }}
                     </span>
                 </td>
-                <td>{{ ex.duration_min or '—' }} min</td>
+                <td>{{ ex.duration_sets or '—' }} sets</td>
                 <td>
                     <form method="POST"
                           action="{{ url_for('plans.remove_exercise', name=plan.name, exercise_id=ex.id) }}">
@@ -101,8 +101,8 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Duration (min)</label>
-                <input type="number" name="duration_min" min="1" placeholder="10">
+                <label>Duration (sets)</label>
+                <input type="number" name="duration_sets" min="1" placeholder="3">
             </div>
         </div>
         <button type="submit" class="btn btn-success">Add Exercise</button>

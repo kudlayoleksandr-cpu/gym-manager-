@@ -38,7 +38,7 @@ def add_suggestion(name):
     muscle = request.form.get('muscle_group', '').strip()
     difficulty = request.form.get('difficulty', 'medium')
     try:
-        duration = int(request.form.get('duration_min') or 0)
+        duration = int(request.form.get('duration_sets') or 0)
     except ValueError:
         duration = 0
 

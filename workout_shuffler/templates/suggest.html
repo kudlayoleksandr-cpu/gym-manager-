@@ -22,14 +22,14 @@
         <div class="suggestion-badges">
             <span class="badge badge-muscle">{{ s.muscle_group }}</span>
             <span class="badge badge-{{ s.difficulty }}">{{ s.difficulty }}</span>
-            <span class="badge badge-duration">{{ s.duration_min }} min</span>
+            <span class="badge badge-duration">{{ s.duration_sets }} sets</span>
         </div>
         <p class="suggestion-reason"><em>{{ s.reason }}</em></p>
         <form method="POST" action="{{ url_for('suggestions.add_suggestion', name=plan.name) }}">
             <input type="hidden" name="name" value="{{ s.name }}">
             <input type="hidden" name="muscle_group" value="{{ s.muscle_group }}">
             <input type="hidden" name="difficulty" value="{{ s.difficulty }}">
-            <input type="hidden" name="duration_min" value="{{ s.duration_min }}">
+            <input type="hidden" name="duration_sets" value="{{ s.duration_sets }}">
             <button type="submit" class="btn btn-success btn-full">+ Add to Plan</button>
         </form>
     </div>

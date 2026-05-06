@@ -27,7 +27,7 @@ class AISuggester:
             '    "name": "Bulgarian Split Squat",\n'
             '    "muscle_group": "legs",\n'
             '    "difficulty": "hard",\n'
-            '    "duration_min": 10,\n'
+            '    "duration_sets": 3,\n'
             '    "reason": "Targets quads and glutes differently than regular squats"\n'
             "  }\n"
             "]"
