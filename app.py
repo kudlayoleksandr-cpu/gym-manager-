@@ -13,7 +13,7 @@ _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 
 create_app = _mod.create_app
+app = create_app()
 
 if __name__ == '__main__':
-    _app = create_app()
-    _app.run(debug=_app.config['DEBUG'])
+    app.run(debug=app.config['DEBUG'])
