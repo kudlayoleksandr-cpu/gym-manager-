@@ -41,8 +41,9 @@ def add_suggestion(name):
         duration = int(request.form.get('duration_sets') or 0)
     except ValueError:
         duration = 0
+    weight = request.form.get('weight', '').strip() or None
 
-    exercise = Exercise(None, ex_name, muscle, difficulty, duration)
+    exercise = Exercise(None, ex_name, muscle, difficulty, duration, weight)
     _manager().add_exercise(name, exercise)
     flash(f'"{ex_name}" added to {name}!', 'success')
     return redirect(url_for('plans.view_plan', name=name))

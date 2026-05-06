@@ -19,6 +19,7 @@ class ExerciseTable(Base):
     muscle_group = Column(String)
     difficulty = Column(String)
     duration_sets = Column(Integer)
+    weight = Column(String, nullable=True)
     plan = relationship('PlanTable', back_populates='exercises')
 
 

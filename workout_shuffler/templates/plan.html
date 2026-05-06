@@ -48,7 +48,8 @@
                 <th>Exercise</th>
                 <th>Muscle Group</th>
                 <th>Difficulty</th>
-                <th>Duration</th>
+                <th>Sets</th>
+                <th>Weight</th>
                 <th></th>
             </tr>
         </thead>
@@ -63,6 +64,7 @@
                     </span>
                 </td>
                 <td>{{ ex.duration_sets or '—' }} sets</td>
+                <td>{{ ex.weight ~ ' kg' if ex.weight else '—' }}</td>
                 <td>
                     <form method="POST"
                           action="{{ url_for('plans.remove_exercise', name=plan.name, exercise_id=ex.id) }}">
@@ -103,6 +105,10 @@
             <div class="form-group">
                 <label>Duration (sets)</label>
                 <input type="number" name="duration_sets" min="1" placeholder="3">
+            </div>
+            <div class="form-group">
+                <label>Weight (kg) <small>optional</small></label>
+                <input type="text" name="weight" placeholder="e.g. 60">
             </div>
         </div>
         <button type="submit" class="btn btn-success">Add Exercise</button>
