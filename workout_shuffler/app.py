@@ -9,15 +9,15 @@ from routes.history_routes import history_bp
 
 def create_app() -> Flask:
     app = Flask(__name__)
-    app.secret_key = 'workout-shuffler-secret-2024'
-
     cfg = Config()
+    app.secret_key = cfg.SECRET_KEY
     db = Database(cfg.DATABASE_URL)
     db.init_db()
 
     manager = WorkoutManager(db)
     app.config['manager'] = manager
     app.config['GEMINI_API_KEY'] = cfg.GEMINI_API_KEY
+    app.config['DEBUG'] = cfg.DEBUG
 
     app.register_blueprint(plan_bp)
     app.register_blueprint(suggestion_bp)
@@ -27,4 +27,5 @@ def create_app() -> Flask:
 
 
 if __name__ == '__main__':
-    create_app().run(debug=True)
+    _app = create_app()
+    _app.run(debug=_app.config['DEBUG'])
