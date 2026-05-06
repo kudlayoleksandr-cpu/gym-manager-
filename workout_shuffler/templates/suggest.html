@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Suggestions for {{ plan.name }} — AI Workout Shuffler{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <a href="{{ url_for('plans.view_plan', name=plan.name) }}" class="back-link">&larr; Back to {{ plan.name }}</a>
+        <h1>AI Suggestions for {{ plan.name }}</h1>
+    </div>
+    <a href="{{ url_for('suggestions.suggest', name=plan.name) }}" class="btn btn-ai">
+        Regenerate Suggestions
+    </a>
+</div>
+
+{% if suggestions %}
+<div class="suggestion-grid">
+    {% for s in suggestions %}
+    <div class="suggestion-card">
+        <div class="suggestion-header">
+            <h2>{{ s.name }}</h2>
+        </div>
+        <div class="suggestion-badges">
+            <span class="badge badge-muscle">{{ s.muscle_group }}</span>
+            <span class="badge badge-{{ s.difficulty }}">{{ s.difficulty }}</span>
+            <span class="badge badge-duration">{{ s.duration_min }} min</span>
+        </div>
+        <p class="suggestion-reason"><em>{{ s.reason }}</em></p>
+        <form method="POST" action="{{ url_for('suggestions.add_suggestion', name=plan.name) }}">
+            <input type="hidden" name="name" value="{{ s.name }}">
+            <input type="hidden" name="muscle_group" value="{{ s.muscle_group }}">
+            <input type="hidden" name="difficulty" value="{{ s.difficulty }}">
+            <input type="hidden" name="duration_min" value="{{ s.duration_min }}">
+            <button type="submit" class="btn btn-success btn-full">+ Add to Plan</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>Could not generate suggestions. Check your API key or try again.</p>
+    <a href="{{ url_for('suggestions.suggest', name=plan.name) }}" class="btn btn-ai">Try Again</a>
+</div>
+{% endif %}
+{% endblock %}

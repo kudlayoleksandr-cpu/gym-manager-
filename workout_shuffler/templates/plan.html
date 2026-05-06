@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}{{ plan.name }} — AI Workout Shuffler{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <a href="{{ url_for('plans.index') }}" class="back-link">&larr; All Plans</a>
+        <h1>{{ plan.name }}</h1>
+    </div>
+    <form method="POST" action="{{ url_for('plans.delete_plan', name=plan.name) }}"
+          onsubmit="return confirm('Delete this plan and all its exercises?')">
+        <button type="submit" class="btn btn-danger">Delete Plan</button>
+    </form>
+</div>
+
+{% if shuffled_order %}
+<div class="card shuffle-result">
+    <h3>{{ shuffle_type }} Shuffle Result</h3>
+    <ol class="shuffle-list">
+        {% for ex in shuffled_order %}
+        <li>{{ ex }}</li>
+        {% endfor %}
+    </ol>
+</div>
+{% endif %}
+
+<div class="action-bar">
+    <form method="POST" action="{{ url_for('plans.shuffle_ai', name=plan.name) }}" style="display:inline">
+        <button type="submit" class="btn btn-ai">AI Shuffle</button>
+    </form>
+    <form method="POST" action="{{ url_for('plans.shuffle_random', name=plan.name) }}" style="display:inline">
+        <button type="submit" class="btn btn-secondary">Random Shuffle</button>
+    </form>
+    <a href="{{ url_for('suggestions.suggest', name=plan.name) }}" class="btn btn-outline">
+        Get AI Suggestions
+    </a>
+    <a href="{{ url_for('history.plan_history', name=plan.name) }}" class="btn btn-ghost">
+        View History
+    </a>
+</div>
+
+{% if plan.exercises %}
+<div class="card">
+    <h3>Exercises ({{ plan.exercises | length }})</h3>
+    <table class="exercise-table">
+        <thead>
+            <tr>
+                <th>Exercise</th>
+                <th>Muscle Group</th>
+                <th>Difficulty</th>
+                <th>Duration</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ex in plan.exercises %}
+            <tr>
+                <td><strong>{{ ex.name }}</strong></td>
+                <td><span class="badge badge-muscle">{{ ex.muscle_group or '—' }}</span></td>
+                <td>
+                    <span class="badge badge-{{ ex.difficulty or 'medium' }}">
+                        {{ ex.difficulty or '—' }}
+                    </span>
+                </td>
+                <td>{{ ex.duration_min or '—' }} min</td>
+                <td>
+                    <form method="POST"
+                          action="{{ url_for('plans.remove_exercise', name=plan.name, exercise_id=ex.id) }}">
+                        <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <p>No exercises yet. Add one below!</p>
+</div>
+{% endif %}
+
+<div class="card form-card">
+    <h3>Add Exercise</h3>
+    <form method="POST" action="{{ url_for('plans.add_exercise', name=plan.name) }}">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Exercise Name</label>
+                <input type="text" name="name" placeholder="e.g. Deadlift" required>
+            </div>
+            <div class="form-group">
+                <label>Muscle Group</label>
+                <input type="text" name="muscle_group" placeholder="e.g. back">
+            </div>
+            <div class="form-group">
+                <label>Difficulty</label>
+                <select name="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Duration (min)</label>
+                <input type="number" name="duration_min" min="1" placeholder="10">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success">Add Exercise</button>
+    </form>
+</div>
+{% endblock %}

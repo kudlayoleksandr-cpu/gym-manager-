@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}History — AI Workout Shuffler{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if active_plan %}History: {{ active_plan }}{% else %}Workout History{% endif %}</h1>
+</div>
+
+<div class="filter-bar">
+    <a href="{{ url_for('history.all_history') }}"
+       class="btn {% if not active_plan %}btn-primary{% else %}btn-ghost{% endif %}">
+        All Plans
+    </a>
+    {% for pname in plan_names %}
+    <a href="{{ url_for('history.plan_history', name=pname) }}"
+       class="btn {% if active_plan == pname %}btn-primary{% else %}btn-ghost{% endif %}">
+        {{ pname }}
+    </a>
+    {% endfor %}
+</div>
+
+{% if sessions %}
+<div class="card">
+    <table class="exercise-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Plan</th>
+                <th>Exercise Order Used</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in sessions %}
+            <tr>
+                <td>{{ s.date }}</td>
+                <td>
+                    <a href="{{ url_for('plans.view_plan', name=s.plan_name) }}" class="plan-link">
+                        {{ s.plan_name }}
+                    </a>
+                </td>
+                <td class="order-cell">{{ s.order_used }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <p>No sessions recorded yet. Do a shuffle to log your first session!</p>
+</div>
+{% endif %}
+{% endblock %}

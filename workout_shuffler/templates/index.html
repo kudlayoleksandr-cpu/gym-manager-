@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Home — AI Workout Shuffler{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Your Workout Plans</h1>
+    <button class="btn btn-primary" onclick="toggleForm('create-form')">+ New Plan</button>
+</div>
+
+<div id="create-form" class="card form-card" style="display:none">
+    <h3>Create New Plan</h3>
+    <form method="POST" action="{{ url_for('plans.create_plan') }}">
+        <div class="form-row">
+            <input type="text" name="name" placeholder="e.g. Pull Day" required>
+            <button type="submit" class="btn btn-success">Create</button>
+        </div>
+    </form>
+</div>
+
+{% if plans %}
+<div class="card-grid">
+    {% for plan in plans %}
+    <a href="{{ url_for('plans.view_plan', name=plan.name) }}" class="plan-card">
+        <div class="plan-card-body">
+            <h2>{{ plan.name }}</h2>
+            <span class="exercise-count">{{ plan.exercises | length }} exercise{{ 's' if plan.exercises | length != 1 }}</span>
+        </div>
+        <div class="plan-card-footer">
+            <span class="tag">View Plan &rarr;</span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>No plans yet. Create one above to get started!</p>
+</div>
+{% endif %}
+
+<script>
+function toggleForm(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+{% endblock %}
