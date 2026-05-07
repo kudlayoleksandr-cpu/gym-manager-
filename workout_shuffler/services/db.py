@@ -1,14 +1,26 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey, event
+from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey, UniqueConstraint, event
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 Base = declarative_base()
 
 
+class UserTable(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(80), unique=True, nullable=False)
+    email = Column(String(120), unique=True, nullable=False)
+    password_hash = Column(String(256), nullable=False)
+    plans = relationship('PlanTable', back_populates='user', cascade='all, delete-orphan')
+
+
 class PlanTable(Base):
     __tablename__ = 'plans'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    name = Column(String, nullable=False)
+    user = relationship('UserTable', back_populates='plans')
     exercises = relationship('ExerciseTable', back_populates='plan', cascade='all, delete-orphan')
+    __table_args__ = (UniqueConstraint('user_id', 'name', name='uq_user_plan_name'),)
 
 
 class ExerciseTable(Base):
@@ -27,14 +39,19 @@ class SessionTable(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     plan_id = Column(Integer, ForeignKey('plans.id'))
     plan_name = Column(String)
+    user_id = Column(Integer, ForeignKey('users.id'))
     date = Column(String)
     order_used = Column(Text)
 
 
 class Database:
     def __init__(self, db_url: str):
-        self.engine = create_engine(db_url, connect_args={'check_same_thread': False})
-        event.listen(self.engine, 'connect', self._set_pragma)
+        kwargs = {}
+        if db_url.startswith('sqlite'):
+            kwargs['connect_args'] = {'check_same_thread': False}
+        self.engine = create_engine(db_url, **kwargs)
+        if db_url.startswith('sqlite'):
+            event.listen(self.engine, 'connect', self._set_pragma)
         self.Session = sessionmaker(bind=self.engine)
 
     @staticmethod
@@ -45,28 +62,6 @@ class Database:
 
     def init_db(self) -> None:
         Base.metadata.create_all(self.engine)
-        self._seed_if_empty()
-
-    def _seed_if_empty(self) -> None:
-        session = self.Session()
-        try:
-            if session.query(PlanTable).count() == 0:
-                leg_day = PlanTable(name='Leg Day', exercises=[
-                    ExerciseTable(name='Squats',      muscle_group='legs', difficulty='hard',   duration_min=10),
-                    ExerciseTable(name='Lunges',      muscle_group='legs', difficulty='medium', duration_min=8),
-                    ExerciseTable(name='Leg Press',   muscle_group='legs', difficulty='medium', duration_min=10),
-                    ExerciseTable(name='Calf Raises', muscle_group='legs', difficulty='easy',   duration_min=6),
-                ])
-                push_day = PlanTable(name='Push Day', exercises=[
-                    ExerciseTable(name='Bench Press',    muscle_group='chest',     difficulty='hard',   duration_min=12),
-                    ExerciseTable(name='Shoulder Press', muscle_group='shoulders', difficulty='medium', duration_min=8),
-                    ExerciseTable(name='Tricep Dips',    muscle_group='triceps',   difficulty='medium', duration_min=7),
-                    ExerciseTable(name='Lateral Raises', muscle_group='shoulders', difficulty='easy',   duration_min=5),
-                ])
-                session.add_all([leg_day, push_day])
-                session.commit()
-        finally:
-            session.close()
 
     def get_session(self):
         return self.Session()

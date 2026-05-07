@@ -10,20 +10,20 @@ class WorkoutManager:
     def __init__(self, db):
         self.db = db
 
-    def create_plan(self, name: str) -> WorkoutPlan:
+    def create_plan(self, name: str, user_id: int) -> WorkoutPlan:
         session = self.db.get_session()
         try:
-            plan = PlanTable(name=name)
+            plan = PlanTable(name=name, user_id=user_id)
             session.add(plan)
             session.commit()
             return WorkoutPlan(plan.id, plan.name)
         finally:
             session.close()
 
-    def get_plan(self, name: str) -> WorkoutPlan | None:
+    def get_plan(self, name: str, user_id: int) -> WorkoutPlan | None:
         session = self.db.get_session()
         try:
-            row = session.query(PlanTable).filter_by(name=name).first()
+            row = session.query(PlanTable).filter_by(name=name, user_id=user_id).first()
             if not row:
                 return None
             exercises = [
@@ -34,10 +34,10 @@ class WorkoutManager:
         finally:
             session.close()
 
-    def get_all_plans(self) -> list[WorkoutPlan]:
+    def get_all_plans(self, user_id: int) -> list[WorkoutPlan]:
         session = self.db.get_session()
         try:
-            rows = session.query(PlanTable).all()
+            rows = session.query(PlanTable).filter_by(user_id=user_id).all()
             return [
                 WorkoutPlan(
                     row.id, row.name,
@@ -49,20 +49,20 @@ class WorkoutManager:
         finally:
             session.close()
 
-    def delete_plan(self, name: str) -> None:
+    def delete_plan(self, name: str, user_id: int) -> None:
         session = self.db.get_session()
         try:
-            row = session.query(PlanTable).filter_by(name=name).first()
+            row = session.query(PlanTable).filter_by(name=name, user_id=user_id).first()
             if row:
                 session.delete(row)
                 session.commit()
         finally:
             session.close()
 
-    def add_exercise(self, plan_name: str, exercise: Exercise) -> Exercise:
+    def add_exercise(self, plan_name: str, exercise: Exercise, user_id: int) -> Exercise:
         session = self.db.get_session()
         try:
-            plan_row = session.query(PlanTable).filter_by(name=plan_name).first()
+            plan_row = session.query(PlanTable).filter_by(name=plan_name, user_id=user_id).first()
             if not plan_row:
                 raise ValueError(f"Plan '{plan_name}' not found")
             ex = ExerciseTable(
@@ -78,24 +78,30 @@ class WorkoutManager:
         finally:
             session.close()
 
-    def remove_exercise(self, exercise_id: int) -> None:
+    def remove_exercise(self, exercise_id: int, user_id: int) -> None:
         session = self.db.get_session()
         try:
-            ex = session.query(ExerciseTable).filter_by(id=exercise_id).first()
+            ex = (
+                session.query(ExerciseTable)
+                .join(PlanTable)
+                .filter(ExerciseTable.id == exercise_id, PlanTable.user_id == user_id)
+                .first()
+            )
             if ex:
                 session.delete(ex)
                 session.commit()
         finally:
             session.close()
 
-    def log_session(self, plan_name: str, order_used: list[str]) -> WorkoutSession:
+    def log_session(self, plan_name: str, order_used: list[str], user_id: int) -> WorkoutSession:
         session = self.db.get_session()
         try:
-            plan_row = session.query(PlanTable).filter_by(name=plan_name).first()
+            plan_row = session.query(PlanTable).filter_by(name=plan_name, user_id=user_id).first()
             plan_id = plan_row.id if plan_row else None
             ws = SessionTable(
                 plan_id=plan_id,
                 plan_name=plan_name,
+                user_id=user_id,
                 date=str(dt_date.today()),
                 order_used=', '.join(order_used),
             )
@@ -105,10 +111,15 @@ class WorkoutManager:
         finally:
             session.close()
 
-    def get_all_history(self) -> list[WorkoutSession]:
+    def get_all_history(self, user_id: int) -> list[WorkoutSession]:
         session = self.db.get_session()
         try:
-            rows = session.query(SessionTable).order_by(SessionTable.id.desc()).all()
+            rows = (
+                session.query(SessionTable)
+                .filter_by(user_id=user_id)
+                .order_by(SessionTable.id.desc())
+                .all()
+            )
             return [
                 WorkoutSession(r.id, r.plan_id, r.plan_name, r.date, r.order_used)
                 for r in rows
@@ -116,12 +127,12 @@ class WorkoutManager:
         finally:
             session.close()
 
-    def get_history_for(self, plan_name: str) -> list[WorkoutSession]:
+    def get_history_for(self, plan_name: str, user_id: int) -> list[WorkoutSession]:
         session = self.db.get_session()
         try:
             rows = (
                 session.query(SessionTable)
-                .filter_by(plan_name=plan_name)
+                .filter_by(plan_name=plan_name, user_id=user_id)
                 .order_by(SessionTable.id.desc())
                 .all()
             )

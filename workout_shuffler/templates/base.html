@@ -10,8 +10,19 @@
     <nav class="navbar">
         <a class="nav-brand" href="{{ url_for('plans.index') }}">AI Workout Shuffler</a>
         <div class="nav-links">
-            <a href="{{ url_for('plans.index') }}">Home</a>
-            <a href="{{ url_for('history.all_history') }}">History</a>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('plans.index') }}">Home</a>
+                <a href="{{ url_for('history.all_history') }}">History</a>
+                <div class="nav-user">
+                    <span class="nav-username">{{ session.get('username') }}</span>
+                    <form method="POST" action="{{ url_for('auth.logout') }}" style="margin:0">
+                        <button type="submit" class="btn-logout">Log out</button>
+                    </form>
+                </div>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}">Log In</a>
+                <a href="{{ url_for('auth.register') }}">Sign Up</a>
+            {% endif %}
         </div>
     </nav>
 
