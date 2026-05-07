@@ -6,20 +6,31 @@ load_dotenv()
 
 class Config:
     def __init__(self):
-        self.SECRET_KEY = os.getenv('SECRET_KEY', 'dev-only-insecure-key')
+        self.SECRET_KEY = self._resolve_secret_key()
         self.GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
         self.DATABASE_URL = self._resolve_database_url()
         self.DEBUG = self._resolve_debug()
 
     @staticmethod
+    def _resolve_secret_key() -> str:
+        secret = (os.getenv('SECRET_KEY') or '').strip()
+        return secret or 'dev-only-insecure-key'
+
+    @staticmethod
     def _resolve_database_url() -> str:
         """Resolve database URL in priority order: DATABASE_URL, Vercel Postgres vars, then SQLite."""
-        db_url = os.getenv('DATABASE_URL')
+        def _clean(value: str | None) -> str | None:
+            if value is None:
+                return None
+            value = value.strip()
+            return value or None
+
+        db_url = _clean(os.getenv('DATABASE_URL'))
         if not db_url:
             db_url = (
-                os.getenv('POSTGRES_URL')
-                or os.getenv('POSTGRES_URL_NON_POOLING')
-                or os.getenv('POSTGRES_PRISMA_URL')
+                _clean(os.getenv('POSTGRES_URL'))
+                or _clean(os.getenv('POSTGRES_URL_NON_POOLING'))
+                or _clean(os.getenv('POSTGRES_PRISMA_URL'))
             )
         if not db_url:
             db_url = 'sqlite:////tmp/workouts.db' if Config._is_vercel_env() else 'sqlite:///workouts.db'
