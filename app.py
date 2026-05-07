@@ -7,7 +7,6 @@ _wdir = os.path.join(_root, 'workout_shuffler')
 
 sys.path.insert(0, _wdir)
 os.chdir(_wdir)
-
 _spec = importlib.util.spec_from_file_location('_workout_app', os.path.join(_wdir, 'app.py'))
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
