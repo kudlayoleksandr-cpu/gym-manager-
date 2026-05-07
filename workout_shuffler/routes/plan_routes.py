@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, session
+from flask_login import login_required, current_user
 from models.exercise import Exercise
 
 plan_bp = Blueprint('plans', __name__)
@@ -13,14 +14,16 @@ def _gemini_key():
 
 
 @plan_bp.route('/')
+@login_required
 def index():
-    plans = _manager().get_all_plans()
+    plans = _manager().get_all_plans(current_user.id)
     return render_template('index.html', plans=plans)
 
 
 @plan_bp.route('/plan/<name>')
+@login_required
 def view_plan(name):
-    plan = _manager().get_plan(name)
+    plan = _manager().get_plan(name, current_user.id)
     if not plan:
         flash('Plan not found.', 'error')
         return redirect(url_for('plans.index'))
@@ -31,13 +34,14 @@ def view_plan(name):
 
 
 @plan_bp.route('/plan/create', methods=['POST'])
+@login_required
 def create_plan():
     name = request.form.get('name', '').strip()
     if not name:
         flash('Plan name cannot be empty.', 'error')
         return redirect(url_for('plans.index'))
     try:
-        _manager().create_plan(name)
+        _manager().create_plan(name, current_user.id)
         flash(f'Plan "{name}" created!', 'success')
     except Exception:
         flash(f'Plan "{name}" already exists or could not be created.', 'error')
@@ -45,13 +49,15 @@ def create_plan():
 
 
 @plan_bp.route('/plan/<name>/delete', methods=['POST'])
+@login_required
 def delete_plan(name):
-    _manager().delete_plan(name)
+    _manager().delete_plan(name, current_user.id)
     flash(f'Plan "{name}" deleted.', 'success')
     return redirect(url_for('plans.index'))
 
 
 @plan_bp.route('/plan/<name>/add', methods=['POST'])
+@login_required
 def add_exercise(name):
     ex_name = request.form.get('name', '').strip()
     if not ex_name:
@@ -65,12 +71,13 @@ def add_exercise(name):
         duration = 0
     weight = request.form.get('weight', '').strip() or None
     exercise = Exercise(None, ex_name, muscle, difficulty, duration, weight)
-    _manager().add_exercise(name, exercise)
+    _manager().add_exercise(name, exercise, current_user.id)
     flash(f'"{ex_name}" added to {name}.', 'success')
     return redirect(url_for('plans.view_plan', name=name))
 
 
 @plan_bp.route('/plan/<name>/remove/<int:exercise_id>', methods=['POST'])
+@login_required
 def remove_exercise(name, exercise_id):
     _manager().remove_exercise(exercise_id)
     flash('Exercise removed.', 'success')
@@ -78,12 +85,13 @@ def remove_exercise(name, exercise_id):
 
 
 @plan_bp.route('/plan/<name>/shuffle', methods=['POST'])
+@login_required
 def shuffle_ai(name):
     from services.ai_shuffler import AIShuffler
     from services.random_shuffler import RandomShuffler
 
     manager = _manager()
-    plan = manager.get_plan(name)
+    plan = manager.get_plan(name, current_user.id)
     if not plan:
         flash('Plan not found.', 'error')
         return redirect(url_for('plans.index'))
@@ -91,7 +99,7 @@ def shuffle_ai(name):
         flash('Add exercises before shuffling.', 'warning')
         return redirect(url_for('plans.view_plan', name=name))
 
-    history = manager.get_history_for(name)
+    history = manager.get_history_for(name, current_user.id)
     try:
         order = AIShuffler(_gemini_key()).shuffle(plan, history)
         shuffle_type = 'AI'
@@ -100,7 +108,7 @@ def shuffle_ai(name):
         order = RandomShuffler().shuffle(plan, history)
         shuffle_type = 'Random'
 
-    manager.log_session(name, order)
+    manager.log_session(name, order, current_user.id)
     session['shuffled_order'] = order
     session['shuffle_type'] = shuffle_type
     flash(f'{shuffle_type} shuffle complete! Session logged.', 'success')
@@ -108,11 +116,12 @@ def shuffle_ai(name):
 
 
 @plan_bp.route('/plan/<name>/shuffle/random', methods=['POST'])
+@login_required
 def shuffle_random(name):
     from services.random_shuffler import RandomShuffler
 
     manager = _manager()
-    plan = manager.get_plan(name)
+    plan = manager.get_plan(name, current_user.id)
     if not plan:
         flash('Plan not found.', 'error')
         return redirect(url_for('plans.index'))
@@ -120,9 +129,9 @@ def shuffle_random(name):
         flash('Add exercises before shuffling.', 'warning')
         return redirect(url_for('plans.view_plan', name=name))
 
-    history = manager.get_history_for(name)
+    history = manager.get_history_for(name, current_user.id)
     order = RandomShuffler().shuffle(plan, history)
-    manager.log_session(name, order)
+    manager.log_session(name, order, current_user.id)
     session['shuffled_order'] = order
     session['shuffle_type'] = 'Random'
     flash('Random shuffle complete! Session logged.', 'success')

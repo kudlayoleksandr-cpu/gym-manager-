@@ -367,6 +367,61 @@ select option { background: var(--surface2); }
 .plan-link { color: var(--accent); font-weight: 600; }
 .plan-link:hover { text-decoration: underline; }
 
+/* ===== AUTH ===== */
+.auth-wrap {
+    display: flex;
+    justify-content: center;
+    padding-top: 60px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--text);
+}
+
+.auth-form { display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; }
+
+.auth-switch {
+    text-align: center;
+    font-size: .85rem;
+    color: var(--text-muted);
+}
+
+.auth-switch a { color: var(--accent); font-weight: 600; }
+.auth-switch a:hover { text-decoration: underline; }
+
+.nav-user {
+    color: var(--text-muted);
+    font-size: .85rem;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+input[type="password"] {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 9px 12px;
+    font-size: .88rem;
+    width: 100%;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+input[type="password"]:focus {
+    border-color: var(--ai);
+    box-shadow: 0 0 0 3px rgba(124,58,237,.15);
+}
+
 /* ===== EMPTY STATE ===== */
 .empty-state {
     text-align: center;
