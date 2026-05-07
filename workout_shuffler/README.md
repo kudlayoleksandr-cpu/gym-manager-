@@ -49,4 +49,5 @@ Open http://localhost:5000 in your browser.
 
 - If the Gemini API fails (bad key, quota, etc.) AI Shuffle automatically falls back to Random Shuffle with a warning message.
 - The SQLite database file (`workouts.db`) is created automatically next to `app.py` on first run.
+- On Vercel, set `POSTGRES_URL` (or `DATABASE_URL`) for a persistent database. If none is set, the app falls back to `/tmp/workouts.db`, which is ephemeral.
 - To use a different Gemini model (e.g. `gemini-2.0-flash`), edit the `GenerativeModel` call in `services/ai_shuffler.py` and `services/ai_suggester.py`.
