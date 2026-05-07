@@ -8,9 +8,6 @@ from routes.suggestion_routes import suggestion_bp
 from routes.history_routes import history_bp
 from routes.auth_routes import auth_bp
 
-login_manager = LoginManager()
-
-
 def create_app() -> Flask:
     app = Flask(__name__)
     cfg = Config()
@@ -24,6 +21,7 @@ def create_app() -> Flask:
     app.config['GEMINI_API_KEY'] = cfg.GEMINI_API_KEY
     app.config['DEBUG'] = cfg.DEBUG
 
+    login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Please log in to access this page.'
