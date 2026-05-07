@@ -13,6 +13,7 @@ class Config:
 
     @staticmethod
     def _resolve_database_url() -> str:
+        """Resolve database URL in priority order: DATABASE_URL, Vercel Postgres vars, then SQLite."""
         db_url = os.getenv('DATABASE_URL')
         if not db_url:
             db_url = (
@@ -21,15 +22,16 @@ class Config:
                 or os.getenv('POSTGRES_PRISMA_URL')
             )
         if not db_url:
-            if os.getenv('VERCEL') or os.getenv('VERCEL_ENV'):
-                db_url = 'sqlite:////tmp/workouts.db'
-            else:
-                db_url = 'sqlite:///workouts.db'
+            db_url = 'sqlite:////tmp/workouts.db' if Config._is_vercel_env() else 'sqlite:///workouts.db'
         if db_url.startswith('postgres://'):
             db_url = db_url.replace('postgres://', 'postgresql://', 1)
         return db_url
 
     @staticmethod
+    def _is_vercel_env() -> bool:
+        return bool(os.getenv('VERCEL') or os.getenv('VERCEL_ENV'))
+
+    @staticmethod
     def _resolve_debug() -> bool:
-        default_debug = 'false' if os.getenv('VERCEL') or os.getenv('VERCEL_ENV') else 'true'
+        default_debug = 'false' if Config._is_vercel_env() else 'true'
         return os.getenv('DEBUG', default_debug).lower() == 'true'
